@@ -2,4 +2,8 @@ module linearregression
 
 go 1.20
 
-require github.com/montanaflynn/stats v0.7.1 // indirect
+require (
+	github.com/mattn/go-runewidth v0.0.9 // indirect
+	github.com/montanaflynn/stats v0.7.1 // indirect
+	github.com/olekukonko/tablewriter v0.0.5 // indirect
+)

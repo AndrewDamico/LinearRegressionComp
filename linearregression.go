@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/montanaflynn/stats"
 	"os/exec"
@@ -119,23 +120,52 @@ func model(x []stats.Coordinate) []float64 {
 	return container
 }
 
+// Define the expected response type from Python and R scripts
+type Response struct {
+	Line []float64 `json:"line"`
+	Time float64   `json:"time"`
+}
+
 func main() {
 	//Run the Go Script
-	startTime := time.Now()
+
+	// determine which set to test on
 	set := "Four"
-	x := model(makeCoordinates(anscombe[set]["x"], anscombe[set]["y"]))
-	elapsedTime := time.Since(startTime)
-	fmt.Println(x)
-	fmt.Printf("Elapsed time: %.9f seconds\n", elapsedTime.Seconds())
+
+	var times []float64
+	var coefficients []float64
+
+	for i := 0; i < 10; i++ {
+		startTime := time.Now()
+		coefficients = model(makeCoordinates(anscombe[set]["x"], anscombe[set]["y"]))
+		elapsedTime := time.Since(startTime).Seconds()
+		elapsedTime = float64(elapsedTime)
+		times = append(times, elapsedTime)
+	}
+
+	averageTime, _ := stats.Mean(times)
 
 	// Run the Python Script
 	cmd := exec.Command("python", "Anscombe_test.py", set)
-
 	output, err := cmd.Output()
 	if err != nil {
 		fmt.Println("Error:", err)
 		return
 	}
 
-	fmt.Println(string(output))
+	// Parse the Python response
+	var response Response
+	err2 := json.Unmarshal([]byte(output), &response)
+	if err2 != nil {
+		fmt.Println("Error:", err2)
+		return
+	}
+
+	// return statistics
+	fmt.Println("Intercept & Slope (GO):", coefficients)
+	fmt.Println("Intercept & Slope (Python):", response.Line)
+
+	fmt.Printf("Elapsed time (GO): %.9f seconds\n", averageTime)
+	fmt.Printf("Elapsed time (Python): %.9f seconds\n", response.Time)
+
 }

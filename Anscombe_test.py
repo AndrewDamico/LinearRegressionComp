@@ -6,6 +6,7 @@ import statsmodels.api as sm
 #import matplotlib.pyplot as plt
 import time
 import sys
+import json
 
 anscombe = {
     "One":{
@@ -50,12 +51,20 @@ def timer(function, testset, n = 10):
     returns average function execution time for n runs
     '''
     times = []
+
     for i in range(n):
         start = time.process_time()
         res = function(testset)
         end = time.process_time() - start
         times.append(end)
-    return (res, np.mean(times))
+
+    response = {
+        "line": res.tolist(),
+        "time": np.mean(times)
+        }
+    json_response = json.dumps(response)
+
+    return (json_response)
 
 
 if __name__ == "__main__":

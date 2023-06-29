@@ -59,8 +59,8 @@ def timer(function, testset, n = 10):
         times.append(end)
 
     response = {
-        "line": res.tolist(),
-        "time": np.mean(times)
+        "Coefficients": res.tolist(),
+        "Time": np.mean(times)
         }
     json_response = json.dumps(response)
 

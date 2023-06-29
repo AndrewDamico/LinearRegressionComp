@@ -5,8 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/montanaflynn/stats"
+	"github.com/olekukonko/tablewriter"
 	"os"
 	"os/exec"
+	"strconv"
 	"time"
 )
 
@@ -29,6 +31,10 @@ var anscombe = map[string]map[string][]float64{
 		"y": []float64{6.58, 5.76, 7.71, 8.84, 8.47, 7.04, 5.25, 12.5, 5.56, 7.91, 6.89},
 	},
 }
+
+var performancePython []float64
+var performanceGo []float64
+var performanceR []float64
 
 // Create function to convert slices to coordinates for Go regression package.
 func makeCoordinates(x, y []float64) []stats.Coordinate {
@@ -99,8 +105,8 @@ func model(x []stats.Coordinate) []float64 {
 
 // Define the expected response type from Python and R scripts
 type Response struct {
-	Line []float64 `json:"line"`
-	Time float64   `json:"time"`
+	Coefficients []float64 `json:"coefficients"`
+	Time         float64   `json:"time"`
 }
 
 // Run Experiment
@@ -120,31 +126,80 @@ func experiment(set string) {
 
 	averageTime, _ := stats.Mean(times)
 
-	// Run the Python Script
+	// Run the Python Script and Parse Response
 	cmd := exec.Command("python", "Anscombe_test.py", set)
 	output, err := cmd.Output()
 	if err != nil {
-		fmt.Println("Error:", err)
+		fmt.Println("Error Python:", err)
+		return
+	}
+
+	var responsePython Response
+	err2 := json.Unmarshal([]byte(output), &responsePython)
+	if err2 != nil {
+		fmt.Println("Error Python Response:", err2)
+		return
+	}
+
+	// Run the R Script and parse R Response
+	cmd = exec.Command("Rscript", "Anscombe_test.R", set)
+	output2, err2 := cmd.Output()
+	if err2 != nil {
+		fmt.Println("Error R:", err2)
 		return
 	}
 
 	// Parse the Python response
-	var response Response
-	err2 := json.Unmarshal([]byte(output), &response)
-	if err2 != nil {
-		fmt.Println("Error:", err2)
+	var responseR Response
+	err3 := json.Unmarshal([]byte(output2), &responseR)
+	if err3 != nil {
+		fmt.Println("Error R Response:", err3)
 		return
 	}
+	// Save Performance Times
+	performancePython = append(performancePython, responsePython.Time)
+	performanceGo = append(performanceGo, averageTime)
+	performanceR = append(performanceR, responseR.Time)
 
-	// return statistics
-	fmt.Println("---------------")
-	fmt.Println("Set:", set)
-	fmt.Println("Intercept & Slope (GO):", coefficients)
-	fmt.Println("Intercept & Slope (Python):", response.Line)
+	// Create Table
+	data := [][]interface{}{
+		{"Go", coefficients[0], coefficients[1], averageTime},
+		{"Python", responsePython.Coefficients[0], responsePython.Coefficients[1], responsePython.Time},
+		{"R", responseR.Coefficients[0], responseR.Coefficients[1], responseR.Time},
+	}
 
-	fmt.Printf("Elapsed time (GO): %.9f seconds\n", averageTime)
-	fmt.Printf("Elapsed time (Python): %.9f seconds\n", response.Time)
-	fmt.Println("---------------")
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetHeader([]string{"Language", "Intersect", "Slope", "Runtime"})
+
+	table.SetAutoWrapText(false)
+
+	for _, row := range data {
+		strRow := make([]string, len(row))
+		for i, val := range row {
+			if floatValue, ok := val.(float64); ok {
+				strRow[i] = strconv.FormatFloat(floatValue, 'f', -1, 64)
+			} else {
+				strRow[i] = fmt.Sprint(val)
+			}
+		}
+		table.Append(strRow)
+	}
+
+	table.Render()
+
+	/*
+		// return statistics
+		fmt.Println("---------------")
+		fmt.Println("Set:", set)
+		fmt.Println("Intercept & Slope (GO):", coefficients)
+		fmt.Println("Intercept & Slope (Python):", responsePython.Coefficients)
+		fmt.Println("Intercept & Slope (R):", responseR.Coefficients)
+
+		fmt.Printf("Elapsed time (GO): %.9f seconds\n", averageTime)
+		fmt.Printf("Elapsed time (Python): %.9f seconds\n", responsePython.Time)
+		fmt.Printf("Elapsed time (R): %.9f seconds\n", responseR.Time)
+		fmt.Println("---------------")
+	*/
 }
 
 func main() {
@@ -166,6 +221,7 @@ func main() {
 		fmt.Println("2. Calculate Performance Using Anselm Set 2")
 		fmt.Println("3. Calculate Performance Using Anselm Set 3")
 		fmt.Println("4. Calculate Performance Using Anselm Set 4")
+		fmt.Println("5. Calculate Average Performance for All Tests in Current Session")
 		fmt.Println("0. Exit")
 
 		var err error
@@ -195,6 +251,15 @@ func main() {
 			set = "Four"
 			fmt.Println("Performing Analysis:")
 			experiment(set)
+		case 5:
+			fmt.Println("Calculating Performance on all runs:")
+			meanPython, _ := stats.Mean(performancePython)
+			meanR, _ := stats.Mean(performanceR)
+			meanGo, _ := stats.Mean(performanceGo)
+
+			fmt.Println("Mean Python Runtime:", meanPython)
+			fmt.Println("Mean R Runtime:", meanR)
+			fmt.Println("Mean Go Runtime:", fmt.Sprintf("%.10f", meanGo))
 		default:
 			fmt.Println("Invalid choice! Please try again.")
 		}

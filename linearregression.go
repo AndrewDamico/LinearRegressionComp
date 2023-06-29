@@ -7,9 +7,9 @@ import (
 	"time"
 )
 
+/*
 func LinearRegression(s stats.Series) (gradient, intercept float64, err error) {
 	//edited from the montanaflynn/stats package: https://github.com/montanaflynn/stats/blob/master/regression.go
-
 	// Placeholder for the math to be done
 	var sum [5]float64
 
@@ -30,6 +30,7 @@ func LinearRegression(s stats.Series) (gradient, intercept float64, err error) {
 
 	return gradient, intercept, nil
 }
+*/
 
 // create the Anscomb data sets
 var anscombe = map[string]map[string][]float64{
@@ -65,26 +66,68 @@ func makeCoordinates(x, y []float64) []stats.Coordinate {
 	return container
 }
 
-// create function to perform linear regression
-func model(x []stats.Coordinate) []float64 {
-	// Takes a set of coordinates and returns a regression line.
-	g, i, _ := LinearRegression(x)
-	//fmt.Println(r)
-	container := []float64{i, g}
+// Create function to determine equation of line
+func line(points []stats.Coordinate) []float64 {
+
+	// determine min and max coordinates from a set of coordinates
+	coords := minmaxCoordinates(points)
+
+	x1 := coords[0].X
+	y1 := coords[0].Y
+	x2 := coords[len(coords)-1].X
+	y2 := coords[len(coords)-1].Y
+
+	// Calculate slope and intercept using y = mx + b
+	m := (y2 - y1) / (x2 - x1)
+	b := y1 - m*x1
+
+	container := []float64{b, m}
 
 	return container
 }
 
-// create the Anscomb data sets
+// Create function to determine the minimum and maximum coordinates of a set of coordinates
+func minmaxCoordinates(x []stats.Coordinate) []stats.Coordinate {
+	minX := x[0].X
+	maxX := x[0].X
+	minXY := x[0]
+	maxXY := x[0]
+
+	for _, point := range x {
+		if point.X < minX {
+			minX = point.X
+			minXY = point
+		}
+		if point.X > maxX {
+			maxX = point.X
+			maxXY = point
+		}
+	}
+	container := []stats.Coordinate{minXY, maxXY}
+
+	return container
+}
+
+// create function to perform linear regression
+func model(x []stats.Coordinate) []float64 {
+	// Takes a set of coordinates and returns a regression line.
+	points, _ := stats.LinearRegression(x)
+
+	// calculate the intercept and slope of the points
+	container := line(points)
+
+	return container
+}
 
 func main() {
 	//Run the Go Script
 	startTime := time.Now()
-	set := "Three"
+	set := "Four"
 	x := model(makeCoordinates(anscombe[set]["x"], anscombe[set]["y"]))
 	elapsedTime := time.Since(startTime)
 	fmt.Println(x)
 	fmt.Printf("Elapsed time: %.9f seconds\n", elapsedTime.Seconds())
+
 	// Run the Python Script
 	cmd := exec.Command("python", "Anscombe_test.py", set)
 

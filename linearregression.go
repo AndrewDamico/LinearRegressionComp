@@ -1,37 +1,14 @@
 package main
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"github.com/montanaflynn/stats"
+	"os"
 	"os/exec"
 	"time"
 )
-
-/*
-func LinearRegression(s stats.Series) (gradient, intercept float64, err error) {
-	//edited from the montanaflynn/stats package: https://github.com/montanaflynn/stats/blob/master/regression.go
-	// Placeholder for the math to be done
-	var sum [5]float64
-
-	// Loop over data keeping index in place
-	i := 0
-	for ; i < len(s); i++ {
-		sum[0] += s[i].X
-		sum[1] += s[i].Y
-		sum[2] += s[i].X * s[i].X
-		sum[3] += s[i].X * s[i].Y
-		sum[4] += s[i].Y * s[i].Y
-	}
-
-	// Find gradient and intercept
-	f := float64(i)
-	gradient = (f*sum[3] - sum[0]*sum[1]) / (f*sum[2] - sum[0]*sum[0])
-	intercept = (sum[1] / f) - (gradient * sum[0] / f)
-
-	return gradient, intercept, nil
-}
-*/
 
 // create the Anscomb data sets
 var anscombe = map[string]map[string][]float64{
@@ -126,16 +103,14 @@ type Response struct {
 	Time float64   `json:"time"`
 }
 
-func main() {
-	//Run the Go Script
-
-	// determine which set to test on
-	set := "Four"
-
+// Run Experiment
+func experiment(set string) {
 	var times []float64
 	var coefficients []float64
 
-	for i := 0; i < 10; i++ {
+	// Calculate coefficients in Go and run experiment n times
+	n := 10
+	for i := 0; i < n; i++ {
 		startTime := time.Now()
 		coefficients = model(makeCoordinates(anscombe[set]["x"], anscombe[set]["y"]))
 		elapsedTime := time.Since(startTime).Seconds()
@@ -162,10 +137,73 @@ func main() {
 	}
 
 	// return statistics
+	fmt.Println("---------------")
+	fmt.Println("Set:", set)
 	fmt.Println("Intercept & Slope (GO):", coefficients)
 	fmt.Println("Intercept & Slope (Python):", response.Line)
 
 	fmt.Printf("Elapsed time (GO): %.9f seconds\n", averageTime)
 	fmt.Printf("Elapsed time (Python): %.9f seconds\n", response.Time)
+	fmt.Println("---------------")
+}
 
+func main() {
+	fmt.Println("Regression Performance between Python, R, and Go")
+	fmt.Println()
+
+	// determine which set to test on
+
+	var choice int64 = -1
+	var set string
+
+	scanner := bufio.NewScanner(os.Stdin)
+
+	for {
+		fmt.Println("Regression Performance - Main Menu")
+		fmt.Println("Please choose one of the following options:")
+
+		fmt.Println("1. Calculate Performance Using Anselm Set 1")
+		fmt.Println("2. Calculate Performance Using Anselm Set 2")
+		fmt.Println("3. Calculate Performance Using Anselm Set 3")
+		fmt.Println("4. Calculate Performance Using Anselm Set 4")
+		fmt.Println("0. Exit")
+
+		var err error
+
+		_, err = fmt.Scanf("%d", &choice)
+		if err != nil {
+			choice = -1
+		}
+
+		switch choice {
+		case 0:
+			// Exit the program
+			fmt.Println("Goodbye...")
+		case 1:
+			set = "One"
+			fmt.Println("Performing Analysis:")
+			experiment(set)
+		case 2:
+			set = "Two"
+			fmt.Println("Performing Analysis:")
+			experiment(set)
+		case 3:
+			set = "Three"
+			fmt.Println("Performing Analysis:")
+			experiment(set)
+		case 4:
+			set = "Four"
+			fmt.Println("Performing Analysis:")
+			experiment(set)
+		default:
+			fmt.Println("Invalid choice! Please try again.")
+		}
+
+		if choice == 0 {
+			return
+		}
+		fmt.Println("Press Enter to continue...")
+		scanner.Scan() // Wait for user to press Enter
+
+	}
 }

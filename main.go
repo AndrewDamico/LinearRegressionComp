@@ -22,16 +22,16 @@ type Response struct {
 var performancePython []float64
 var performanceGo []float64
 var performanceR []float64
+var nRuns int = 100
 
 // Run Go Experiment
-func experimentGo(set string) Response {
+func experimentGo(set string, nRuns int) Response {
 	fmt.Println("  Performing Go Experiment...")
 
 	var responseGo Response
 	var times []float64
 
-	n := 10
-	for i := 0; i < n; i++ {
+	for i := 0; i < nRuns; i++ {
 		startTime := time.Now()
 		points, _ := stats.LinearRegression(
 			makeCoordinates(
@@ -50,12 +50,13 @@ func experimentGo(set string) Response {
 }
 
 // Run Python Experiment
-func experimentPython(set string) Response {
+func experimentPython(set, nRunsString string) Response {
 	fmt.Println("  Performing Python Experiment...")
 	var responsePython Response
 
 	// Run the Python Script
-	cmd := exec.Command("python", "AnscombeTest.py", set)
+	args := []string{"AnscombeTest.py", set, nRunsString}
+	cmd := exec.Command("python", args...)
 	output, err := cmd.Output()
 	if err != nil {
 		fmt.Println("Error Python:", err)
@@ -71,12 +72,13 @@ func experimentPython(set string) Response {
 }
 
 // Run R Experiment
-func experimentR(set string) Response {
+func experimentR(set, nRunsString string) Response {
 	fmt.Println("  Performing R Experiment...")
 	var responseR Response
 
 	// Run the R Script
-	cmd := exec.Command("Rscript", "AnscombeTest.R", set)
+	args := []string{"AnscombeTest.R", set, nRunsString}
+	cmd := exec.Command("Rscript", args...)
 	output, err := cmd.Output()
 	if err != nil {
 		fmt.Println("Error R:", err)
@@ -126,10 +128,11 @@ func createTable(resultsGo, resultsPython, resultsR Response) {
 // Run Experiment
 func experiment(set string) {
 	fmt.Println("Performing Analysis:")
+	var nRunsString string = strconv.Itoa(nRuns)
 
-	responseGo := experimentGo(set)
-	responsePython := experimentPython(set)
-	responseR := experimentR(set)
+	responseGo := experimentGo(set, nRuns)
+	responsePython := experimentPython(set, nRunsString)
+	responseR := experimentR(set, nRunsString)
 
 	// Save Performance Times
 	performancePython = append(performancePython, responsePython.Time)
@@ -193,6 +196,7 @@ func main() {
 		fmt.Println("3. Calculate Performance Using Anselm Set 3")
 		fmt.Println("4. Calculate Performance Using Anselm Set 4")
 		fmt.Println("5. Calculate Average Performance for All Tests in Current Session")
+		fmt.Println("6. Configuration Menu")
 		fmt.Println("0. Exit")
 
 		var err error
@@ -209,15 +213,27 @@ func main() {
 		case 1:
 			set = "One"
 			experiment(set)
+			fmt.Println()
+			fmt.Println("Press Enter to continue...")
+			scanner.Scan()
 		case 2:
 			set = "Two"
 			experiment(set)
+			fmt.Println()
+			fmt.Println("Press Enter to continue...")
+			scanner.Scan()
 		case 3:
 			set = "Three"
 			experiment(set)
+			fmt.Println()
+			fmt.Println("Press Enter to continue...")
+			scanner.Scan()
 		case 4:
 			set = "Four"
 			experiment(set)
+			fmt.Println()
+			fmt.Println("Press Enter to continue...")
+			scanner.Scan()
 		case 5:
 			fmt.Println("Calculating Performance on all runs:")
 			meanPython, _ := stats.Mean(performancePython)
@@ -229,6 +245,11 @@ func main() {
 			fmt.Println("Mean Go Runtime:", fmt.Sprintf("%.10f", meanGo))
 			fmt.Println()
 			performanceMatrix(meanPython, meanR, meanGo)
+			fmt.Println()
+			fmt.Println("Press Enter to continue...")
+			scanner.Scan()
+		case 6:
+			options()
 		default:
 			fmt.Println("Invalid choice! Please try again.")
 		}
@@ -236,8 +257,57 @@ func main() {
 		if choice == 0 {
 			return
 		}
-		fmt.Println("Press Enter to continue...")
-		scanner.Scan() // Wait for user to press Enter
+	}
+}
+
+func options() {
+	fmt.Println("Configuration Menu")
+	fmt.Println()
+
+	// determine which set to test on
+
+	var choice int64 = -1
+
+	scanner := bufio.NewScanner(os.Stdin)
+
+	for {
+		fmt.Println("Configuration Menu")
+		fmt.Println("Please choose one of the following options:")
+		fmt.Println("1. Set number of runs per experiment.")
+		fmt.Println("2. Set option B.")
+		fmt.Println("Press Enter to Return to Previous Menu")
+
+		var err error
+
+		_, err = fmt.Scanf("%d", &choice)
+		if err != nil {
+			choice = -1
+		}
+
+		switch choice {
+		case 0:
+			// Return to Previous Menu
+			fmt.Println()
+		case 1:
+			fmt.Println("Current number of runs per experiment:", nRuns)
+			fmt.Println("Please enter new number and press enter.")
+			_, err := fmt.Scanln(&nRuns)
+			if err != nil {
+				fmt.Println("Invalid input. Please try again.")
+				continue
+			}
+			fmt.Println("Current number of runs per experiment:", nRuns)
+			fmt.Println("Press Enter to continue...")
+			scanner.Scan()
+		default:
+			return
+		}
+
+		if choice == 0 {
+			return
+		}
+		//fmt.Println("Press Enter to continue...")
+		//scanner.Scan() // Wait for user to press Enter
 
 	}
 }

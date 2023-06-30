@@ -69,5 +69,6 @@ def timer(function, testset, n = 10):
 
 if __name__ == "__main__":
     set_n = sys.argv[1]
-    print (timer(test, anscombe[set_n]))
+    run_n = int(sys.argv[2])
+    print (timer(test, anscombe[set_n], n = run_n))
     

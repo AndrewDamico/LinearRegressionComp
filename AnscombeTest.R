@@ -1,7 +1,7 @@
 #!/usr/bin/env Rscript
 args = commandArgs(trailingOnly=TRUE)
-
 key <- args[1]
+run_n <- as.integer(args[2])
 
 # Test to see if jsonlite needs to be installed locally
 if(!require(jsonlite)){
@@ -36,7 +36,7 @@ experiment <- function(dataset){
   values = c(intercept, slope)
 }
 
-n = 10
+n = run_n
 runtime <- c()
 for (i in 1:n) {
   start_time <- Sys.time()

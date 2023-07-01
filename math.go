@@ -1,6 +1,15 @@
 package main
 
-import "github.com/montanaflynn/stats"
+import (
+	"github.com/montanaflynn/stats"
+	"math"
+)
+
+// Function to Round Float to Specific Accuracy
+func roundFloat(val float64, precision uint) float64 {
+	ratio := math.Pow(10, float64(precision))
+	return math.Round(val*ratio) / ratio
+}
 
 // Create function to determine equation of line
 func EquationLine(points []stats.Coordinate) []float64 {

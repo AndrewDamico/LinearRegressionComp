@@ -15,12 +15,11 @@ type Response struct {
 var performancePython []float64
 var performanceGo []float64
 var performanceR []float64
-var nRuns int = 100
-var nExperiments = 20
+var nRuns int = 500 //!important for Windows
+var nExperiments = 15
 
 // Run Experiment
 func experiment(set string) {
-	clearScreen()
 	fmt.Println("Performing Analysis:")
 	fmt.Println("  Number of runs for each test:", nRuns)
 	fmt.Println("  Number of runs for each experiment:", nExperiments)
@@ -77,21 +76,24 @@ func runall() {
 
 		var err error
 
-		_, err = fmt.Scanf("%d", &choice)
+		_, err = fmt.Scanf("%d\n", &choice)
 		if err != nil {
 			choice = -1
 		}
 
 		switch choice {
 		case 1:
+			clearScreen()
 			fmt.Println("Running all Four Anscombe Quartets.")
 			experiment("One")
 			experiment("Two")
 			experiment("Three")
 			experiment("Four")
 		case 2:
+			clearScreen()
 			mainMenu()
 		default:
+			clearScreen()
 			mainMenu()
 		}
 

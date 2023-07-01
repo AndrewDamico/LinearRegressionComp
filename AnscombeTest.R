@@ -37,15 +37,13 @@ experiment <- function(dataset){
 }
 
 n = run_n
-runtime <- c()
+start_time <- Sys.time()
 for (i in 1:n) {
-  start_time <- Sys.time()
   experiment(dataset = "One")
-  end_time <- Sys.time()
-  runtime <- append(runtime, end_time - start_time)
 }
-
-averageTime = as.numeric(mean(runtime))
+end_time <- Sys.time()
+runtime <- end_time - start_time
+averageTime = as.numeric(runtime/n)
 jsonlite::toJSON(list(Coefficients = experiment(dataset = "One"), Time = averageTime), pretty = TRUE, digits=20, auto_unbox = TRUE)
 
   

@@ -11,13 +11,21 @@ import (
 
 // Calculates the mean runtime for each experiment
 func calcPerformance() {
+	// Check to make sure that experiments exist. If not, give option to run all experiments or return to menu.
+	if len(performanceGo) == 0 {
+		fmt.Println("No experiments have been run in this session. Please run some experiments first.")
+		runall()
+		//calcPerformance()
+		//return
+	}
+
 	meanPython, _ := stats.Mean(performancePython)
 	meanR, _ := stats.Mean(performanceR)
 	meanGo, _ := stats.Mean(performanceGo)
 	fmt.Println()
-	fmt.Println("Mean Python Runtime:", meanPython)
-	fmt.Println("Mean R Runtime:", meanR)
-	fmt.Println("Mean Go Runtime:", fmt.Sprintf("%.10f", meanGo))
+	fmt.Println("Mean Python Runtime:", fmt.Sprintf("%.7f", meanPython))
+	fmt.Println("Mean R Runtime:", fmt.Sprintf("%.7f", meanR))
+	fmt.Println("Mean Go Runtime:", fmt.Sprintf("%.7f", meanGo))
 	fmt.Println()
 	performanceMatrix(meanPython, meanR, meanGo)
 }
@@ -26,9 +34,21 @@ func calcPerformance() {
 func createTable(resultsGo, resultsPython, resultsR Response) {
 	// Create Table
 	data := [][]interface{}{
-		{"Go", resultsGo.Coefficients[0], resultsGo.Coefficients[1], resultsGo.Time},
-		{"Python", resultsPython.Coefficients[0], resultsPython.Coefficients[1], resultsPython.Time},
-		{"R", resultsR.Coefficients[0], resultsR.Coefficients[1], resultsR.Time},
+		{"Go",
+			roundFloat(resultsGo.Coefficients[0], 10),
+			roundFloat(resultsGo.Coefficients[1], 10),
+			roundFloat(resultsGo.Time, 7),
+		},
+		{"Python",
+			roundFloat(resultsPython.Coefficients[0], 10),
+			roundFloat(resultsPython.Coefficients[1], 10),
+			roundFloat(resultsPython.Time, 7),
+		},
+		{"R",
+			roundFloat(resultsR.Coefficients[0], 10),
+			roundFloat(resultsR.Coefficients[1], 10),
+			roundFloat(resultsR.Time, 7),
+		},
 	}
 
 	table := tablewriter.NewWriter(os.Stdout)
@@ -58,12 +78,15 @@ func createTable(resultsGo, resultsPython, resultsR Response) {
 // Generates a table showing speed ratios of each experiment
 func performanceMatrix(meanPython, meanR, meanGo float64) {
 	// Check to make sure that experiments exist. If not, give option to run all experiments or return to menu.
-	if len(performanceGo) == 0 {
-		fmt.Println("No experiments have been run in this session. Please run some experiments first.")
-		runall()
-		calcPerformance()
-		return
-	}
+	/*
+		if len(performanceGo) == 0 {
+			fmt.Println("No experiments have been run in this session. Please run some experiments first.")
+			runall()
+			calcPerformance()
+			return
+		}
+
+	*/
 	// Creates a table showing the speed of execution relative to a baseline language.
 	data := [][]interface{}{
 		{"Go", meanGo / meanGo, meanPython / meanGo, meanR / meanGo},

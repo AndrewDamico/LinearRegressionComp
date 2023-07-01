@@ -52,61 +52,56 @@ func mainMenu() {
 			// Exit the program
 			fmt.Println("Goodbye...")
 		case 1:
+			clearScreen()
 			set = "One"
 			experiment(set)
 			menuReset()
 		case 2:
+			clearScreen()
 			set = "Two"
 			experiment(set)
-			fmt.Println()
-			fmt.Println("Press Enter to continue...")
-			scanner.Scan()
+			menuReset()
 		case 3:
+			clearScreen()
 			set = "Three"
 			experiment(set)
-			fmt.Println()
-			fmt.Println("Press Enter to continue...")
-			scanner.Scan()
+			menuReset()
 		case 4:
+			clearScreen()
 			set = "Four"
 			experiment(set)
-			fmt.Println()
-			fmt.Println("Press Enter to continue...")
-			scanner.Scan()
+			menuReset()
 		case 5:
+			clearScreen()
 			fmt.Println("Running all Four Anscombe Quartets.")
 			experiment("One")
 			experiment("Two")
 			experiment("Three")
 			experiment("Four")
-			fmt.Println()
-			fmt.Println("Press Enter to continue...")
-			scanner.Scan()
+			menuReset()
 		case 6:
+			clearScreen()
 			fmt.Println("Calculating Performance on all runs:")
 			calcPerformance()
-			fmt.Println()
-			fmt.Println("Press Enter to continue...")
-			scanner.Scan()
+			menuReset()
 		case 7:
+			clearScreen()
 			fmt.Println("Graphing Performance on all runs:")
 			performanceGraph()
-			fmt.Println()
-			fmt.Println("Press Enter to continue...")
-			scanner.Scan()
+			menuReset()
 		case 8:
-			help()
-			fmt.Println()
-			fmt.Println("Press Enter to continue...")
-			scanner.Scan()
 			clearScreen()
+			help()
+			menuReset()
 		case 9:
+			clearScreen()
 			optionsMenu()
 		default:
 			fmt.Println("Invalid choice! Please try again.")
 		}
 
 		if choice == 0 {
+			clearScreen()
 			return
 		}
 	}
@@ -123,53 +118,71 @@ func optionsMenu() {
 
 	scanner := bufio.NewScanner(os.Stdin)
 
+	menuReset := func() {
+		fmt.Println()
+		fmt.Println("Press Enter to continue...")
+		scanner.Scan()
+		clearScreen()
+	}
+
 	for {
 		fmt.Println("Configuration Menu")
 		fmt.Println("Please choose one of the following options:")
 		fmt.Println("1. Set number of runs per test.")
 		fmt.Println("2. Set number of runs per experiment.")
+		fmt.Println("3. Set config to Debug mode.")
 		fmt.Println("Press Enter to Return to Previous Menu")
 
 		var err error
 
-		_, err = fmt.Scanf("%d", &choice)
+		_, err = fmt.Scanf("%d\n", &choice)
 		if err != nil {
 			choice = -1
 		}
 
 		switch choice {
 		case 0:
+			clearScreen()
 			// Return to Previous Menu
 			fmt.Println()
 		case 1:
+			clearScreen()
 			fmt.Println("Runs per test determines number of times each model will be built. Times are then averaged and reported to application.")
 			fmt.Println("Current number of runs per test:", nRuns)
 			fmt.Println("Please enter new number and press enter.")
-			_, err := fmt.Scanln(&nRuns)
+			//#todo if user doesn't enter number use default
+			_, err := fmt.Scanf("%d\n", &nRuns)
 			if err != nil {
 				fmt.Println("Invalid input. Please try again.")
 				continue
 			}
 			fmt.Println("Current number of runs per test:", nRuns)
-			fmt.Println("Press Enter to continue...")
-			scanner.Scan()
+			menuReset()
 		case 2:
+			clearScreen()
 			fmt.Println("Runs per experiment determines number of times each experiment will be run in addition to number of times each test will be run (test x experiment = total number of runs)")
 			fmt.Println("Current number of runs per experiment:", nExperiments)
 			fmt.Println("Please enter new number and press enter.")
-			_, err := fmt.Scanln(&nExperiments)
+			//#todo if user doesn't enter number use default
+			_, err := fmt.Scanf("%d\n", &nExperiments)
 			if err != nil {
-				fmt.Println("Invalid input. Please try again.")
+				fmt.Println("Invalid input. Please enter number try again.")
 				continue
 			}
 			fmt.Println("Current number of runs per experiment:", nExperiments)
-			fmt.Println("Press Enter to continue...")
-			scanner.Scan()
+			menuReset()
+		case 3:
+			clearScreen()
+			fmt.Println("Setting config to debug mode")
+			nExperiments = 1
+			menuReset()
 		default:
+			clearScreen()
 			return
 		}
 
 		if choice == 0 {
+			clearScreen()
 			return
 		}
 		//fmt.Println("Press Enter to continue...")

@@ -50,17 +50,16 @@ def timer(function, testset, n = 10):
     '''
     returns average function execution time for n runs
     '''
-    times = []
-
+    start = time.process_time()
     for i in range(n):
-        start = time.process_time()
+        #start = time.process_time()
         res = function(testset)
-        end = time.process_time() - start
-        times.append(end)
+    end = time.process_time() - start
+    total = end / n
 
     response = {
         "Coefficients": res.tolist(),
-        "Time": np.mean(times)
+        "Time": total
         }
     json_response = json.dumps(response)
 

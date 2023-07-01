@@ -13,22 +13,25 @@ func ExperimentGo(set string, nRuns int) Response {
 	//fmt.Println("  Performing Go Experiment...")
 
 	var responseGo Response
-	var times []float64
+	//var times []float64
 
+	startTime := time.Now()
+	time.Sleep(startTime.Truncate(time.Second).Add(time.Second).Sub(startTime))
+	startTime = time.Now()
 	for i := 0; i < nRuns; i++ {
-		startTime := time.Now()
+
 		points, _ := stats.LinearRegression(
 			MakeCoordinates(
 				anscombe[set]["x"],
 				anscombe[set]["y"]),
 		)
 		responseGo.Coefficients = EquationLine(points)
-		elapsedTime := time.Since(startTime).Seconds()
-		elapsedTime = float64(elapsedTime)
-		times = append(times, elapsedTime)
-	}
 
-	responseGo.Time, _ = stats.Mean(times)
+	}
+	endTime := time.Now()
+	elapsedTime := endTime.Sub(startTime).Seconds()
+	elapsedTime = elapsedTime / float64(nRuns)
+	responseGo.Time = elapsedTime
 
 	return responseGo
 }

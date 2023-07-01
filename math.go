@@ -3,10 +3,10 @@ package main
 import "github.com/montanaflynn/stats"
 
 // Create function to determine equation of line
-func equationLine(points []stats.Coordinate) []float64 {
+func EquationLine(points []stats.Coordinate) []float64 {
 
 	// determine min and max coordinates from a set of coordinates
-	coords := minmaxCoordinates(points)
+	coords := MinMaxCoordinates(points)
 
 	x1 := coords[0].X
 	y1 := coords[0].Y
@@ -23,7 +23,7 @@ func equationLine(points []stats.Coordinate) []float64 {
 }
 
 // Create function to determine the minimum and maximum coordinates of a set of coordinates
-func minmaxCoordinates(x []stats.Coordinate) []stats.Coordinate {
+func MinMaxCoordinates(x []stats.Coordinate) []stats.Coordinate {
 	minX := x[0].X
 	maxX := x[0].X
 	minXY := x[0]

@@ -1,9 +1,9 @@
 package main
 
 import (
-	"bufio"
 	"encoding/json"
 	"fmt"
+	"github.com/guptarohit/asciigraph"
 	"github.com/montanaflynn/stats"
 	"github.com/olekukonko/tablewriter"
 	"os"
@@ -23,10 +23,11 @@ var performancePython []float64
 var performanceGo []float64
 var performanceR []float64
 var nRuns int = 100
+var nExperiments = 20
 
 // Run Go Experiment
-func experimentGo(set string, nRuns int) Response {
-	fmt.Println("  Performing Go Experiment...")
+func ExperimentGo(set string, nRuns int) Response {
+	//fmt.Println("  Performing Go Experiment...")
 
 	var responseGo Response
 	var times []float64
@@ -34,11 +35,11 @@ func experimentGo(set string, nRuns int) Response {
 	for i := 0; i < nRuns; i++ {
 		startTime := time.Now()
 		points, _ := stats.LinearRegression(
-			makeCoordinates(
+			MakeCoordinates(
 				anscombe[set]["x"],
 				anscombe[set]["y"]),
 		)
-		responseGo.Coefficients = equationLine(points)
+		responseGo.Coefficients = EquationLine(points)
 		elapsedTime := time.Since(startTime).Seconds()
 		elapsedTime = float64(elapsedTime)
 		times = append(times, elapsedTime)
@@ -50,8 +51,8 @@ func experimentGo(set string, nRuns int) Response {
 }
 
 // Run Python Experiment
-func experimentPython(set, nRunsString string) Response {
-	fmt.Println("  Performing Python Experiment...")
+func ExperimentPython(set, nRunsString string) Response {
+	//fmt.Println("  Performing Python Experiment...")
 	var responsePython Response
 
 	// Run the Python Script
@@ -72,8 +73,8 @@ func experimentPython(set, nRunsString string) Response {
 }
 
 // Run R Experiment
-func experimentR(set, nRunsString string) Response {
-	fmt.Println("  Performing R Experiment...")
+func ExperimentR(set, nRunsString string) Response {
+	//fmt.Println("  Performing R Experiment...")
 	var responseR Response
 
 	// Run the R Script
@@ -128,24 +129,126 @@ func createTable(resultsGo, resultsPython, resultsR Response) {
 // Run Experiment
 func experiment(set string) {
 	fmt.Println("Performing Analysis:")
+	fmt.Println("  Number of runs for each test:", nRuns)
+	fmt.Println("  Number of runs for each experiment:", nExperiments)
+	fmt.Println("  Total number of runs:", nExperiments*nRuns)
+
 	var nRunsString string = strconv.Itoa(nRuns)
 
-	responseGo := experimentGo(set, nRuns)
-	responsePython := experimentPython(set, nRunsString)
-	responseR := experimentR(set, nRunsString)
+	var performanceGoExperiment []float64
+	var performancePythonExperiment []float64
+	var performanceRExperiment []float64
+
+	var responseGo Response
+	var responsePython Response
+	var responseR Response
+
+	// Runs each experiment n times and saves experiment values
+	for i := 0; i < nExperiments; i++ {
+		fmt.Printf("Performing Experiment on set %s: %d \r", set, i+1)
+		responseGo = ExperimentGo(set, nRuns)
+		responsePython = ExperimentPython(set, nRunsString)
+		responseR = ExperimentR(set, nRunsString)
+
+		// Saves each experiment to the global log for charting
+		performanceGoExperiment = append(performanceGoExperiment, responseGo.Time)
+		performancePythonExperiment = append(performancePythonExperiment, responsePython.Time)
+		performanceRExperiment = append(performanceRExperiment, responseR.Time)
+	}
 
 	// Save Performance Times
-	performancePython = append(performancePython, responsePython.Time)
-	performanceGo = append(performanceGo, responseGo.Time)
-	performanceR = append(performanceR, responseR.Time)
+	performancePython = append(performancePython, performancePythonExperiment...)
+	performanceGo = append(performanceGo, performanceGoExperiment...)
+	performanceR = append(performanceR, performanceRExperiment...)
+	fmt.Println()
+	fmt.Println("  Performance times logged.")
 
+	// Displays most recent experiment results
+	// #ToDo make averages of experiment results instead
+	fmt.Println()
+	fmt.Printf("Results from Set %s: \r", set)
 	fmt.Println()
 	createTable(responseGo, responsePython, responseR)
 
 	return
 }
 
+func runall() {
+	var choice int64 = -1
+	//scanner := bufio.NewScanner(os.Stdin)
+
+	for {
+		fmt.Println("Would you like to run all Anscombe Quartet sets now?")
+		fmt.Println("1. Yes")
+		fmt.Println("2. No, Return to Menu")
+
+		var err error
+
+		_, err = fmt.Scanf("%d", &choice)
+		if err != nil {
+			choice = -1
+		}
+
+		switch choice {
+		case 1:
+			fmt.Println("Running all Four Anscombe Quartets.")
+			experiment("One")
+			experiment("Two")
+			experiment("Three")
+			experiment("Four")
+		case 2:
+			mainMenu()
+		default:
+			mainMenu()
+		}
+
+		//if choice == 0 {
+		return
+	}
+}
+
+func performanceGraph() {
+
+	if len(performanceGo) == 0 {
+		fmt.Println("No experiments have been run in this session. Please run some experiments first.")
+		runall()
+	}
+	log := [][]float64{
+		performanceGo,
+		performanceR,
+		performancePython,
+	}
+
+	graph := asciigraph.PlotMany(log, asciigraph.Precision(10), asciigraph.SeriesColors(
+		asciigraph.Red,
+		asciigraph.Yellow,
+		asciigraph.Green,
+		//asciigraph.Blue,
+	))
+
+	fmt.Println("Legend: Go (Red), Python (Green), R (Yellow)")
+	fmt.Println(graph)
+	fmt.Println()
+}
+func calcPerformance() {
+	meanPython, _ := stats.Mean(performancePython)
+	meanR, _ := stats.Mean(performanceR)
+	meanGo, _ := stats.Mean(performanceGo)
+	fmt.Println()
+	fmt.Println("Mean Python Runtime:", meanPython)
+	fmt.Println("Mean R Runtime:", meanR)
+	fmt.Println("Mean Go Runtime:", fmt.Sprintf("%.10f", meanGo))
+	fmt.Println()
+	performanceMatrix(meanPython, meanR, meanGo)
+}
 func performanceMatrix(meanPython, meanR, meanGo float64) {
+	// Check to make sure that experiments exist. If not, give option to run all experiments or return to menu.
+	if len(performanceGo) == 0 {
+		fmt.Println("No experiments have been run in this session. Please run some experiments first.")
+		runall()
+		calcPerformance()
+		return
+	}
 	// Creates a table showing the speed of execution relative to a baseline language.
 	data := [][]interface{}{
 		{"Go", meanGo / meanGo, meanPython / meanGo, meanR / meanGo},
@@ -172,6 +275,11 @@ func performanceMatrix(meanPython, meanR, meanGo float64) {
 	}
 
 	table.Render()
+	if len(performanceGo) == 0 {
+		fmt.Println()
+		fmt.Println("No experiments have been run in this session. Please run some experiments first.")
+		return
+	}
 	fmt.Println()
 
 	return
@@ -180,134 +288,5 @@ func performanceMatrix(meanPython, meanR, meanGo float64) {
 func main() {
 	fmt.Println("Regression Performance between Python, R, and Go")
 	fmt.Println()
-
-	// determine which set to test on
-
-	var choice int64 = -1
-	var set string
-
-	scanner := bufio.NewScanner(os.Stdin)
-
-	for {
-		fmt.Println("Regression Performance - Main Menu")
-		fmt.Println("Please choose one of the following options:")
-		fmt.Println("1. Calculate Performance Using Anselm Set 1")
-		fmt.Println("2. Calculate Performance Using Anselm Set 2")
-		fmt.Println("3. Calculate Performance Using Anselm Set 3")
-		fmt.Println("4. Calculate Performance Using Anselm Set 4")
-		fmt.Println("5. Calculate Average Performance for All Tests in Current Session")
-		fmt.Println("6. Configuration Menu")
-		fmt.Println("0. Exit")
-
-		var err error
-
-		_, err = fmt.Scanf("%d", &choice)
-		if err != nil {
-			choice = -1
-		}
-
-		switch choice {
-		case 0:
-			// Exit the program
-			fmt.Println("Goodbye...")
-		case 1:
-			set = "One"
-			experiment(set)
-			fmt.Println()
-			fmt.Println("Press Enter to continue...")
-			scanner.Scan()
-		case 2:
-			set = "Two"
-			experiment(set)
-			fmt.Println()
-			fmt.Println("Press Enter to continue...")
-			scanner.Scan()
-		case 3:
-			set = "Three"
-			experiment(set)
-			fmt.Println()
-			fmt.Println("Press Enter to continue...")
-			scanner.Scan()
-		case 4:
-			set = "Four"
-			experiment(set)
-			fmt.Println()
-			fmt.Println("Press Enter to continue...")
-			scanner.Scan()
-		case 5:
-			fmt.Println("Calculating Performance on all runs:")
-			meanPython, _ := stats.Mean(performancePython)
-			meanR, _ := stats.Mean(performanceR)
-			meanGo, _ := stats.Mean(performanceGo)
-			fmt.Println()
-			fmt.Println("Mean Python Runtime:", meanPython)
-			fmt.Println("Mean R Runtime:", meanR)
-			fmt.Println("Mean Go Runtime:", fmt.Sprintf("%.10f", meanGo))
-			fmt.Println()
-			performanceMatrix(meanPython, meanR, meanGo)
-			fmt.Println()
-			fmt.Println("Press Enter to continue...")
-			scanner.Scan()
-		case 6:
-			options()
-		default:
-			fmt.Println("Invalid choice! Please try again.")
-		}
-
-		if choice == 0 {
-			return
-		}
-	}
-}
-
-func options() {
-	fmt.Println("Configuration Menu")
-	fmt.Println()
-
-	// determine which set to test on
-
-	var choice int64 = -1
-
-	scanner := bufio.NewScanner(os.Stdin)
-
-	for {
-		fmt.Println("Configuration Menu")
-		fmt.Println("Please choose one of the following options:")
-		fmt.Println("1. Set number of runs per experiment.")
-		fmt.Println("2. Set option B.")
-		fmt.Println("Press Enter to Return to Previous Menu")
-
-		var err error
-
-		_, err = fmt.Scanf("%d", &choice)
-		if err != nil {
-			choice = -1
-		}
-
-		switch choice {
-		case 0:
-			// Return to Previous Menu
-			fmt.Println()
-		case 1:
-			fmt.Println("Current number of runs per experiment:", nRuns)
-			fmt.Println("Please enter new number and press enter.")
-			_, err := fmt.Scanln(&nRuns)
-			if err != nil {
-				fmt.Println("Invalid input. Please try again.")
-				continue
-			}
-			fmt.Println("Current number of runs per experiment:", nRuns)
-			fmt.Println("Press Enter to continue...")
-			scanner.Scan()
-		default:
-			return
-		}
-
-		if choice == 0 {
-			return
-		}
-		//fmt.Println("Press Enter to continue...")
-		//scanner.Scan() // Wait for user to press Enter
-
-	}
+	mainMenu()
 }

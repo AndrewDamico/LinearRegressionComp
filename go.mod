@@ -1,4 +1,4 @@
-module main
+module LinearRegressionComp
 
 go 1.20
 

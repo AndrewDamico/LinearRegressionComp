@@ -30,7 +30,10 @@ func ExperimentGo(set string, nRuns int) Response {
 	}
 	endTime := time.Now()
 	elapsedTime := endTime.Sub(startTime).Seconds()
-	elapsedTime = elapsedTime / float64(nRuns)
+	elapsedTime = roundFloat(elapsedTime/float64(nRuns), 10)
+	if elapsedTime == 0 {
+		elapsedTime = 0.00000000001
+	}
 	responseGo.Time = elapsedTime
 
 	return responseGo

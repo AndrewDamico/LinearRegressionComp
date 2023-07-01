@@ -6,6 +6,8 @@ import (
 	"strconv"
 )
 
+//TODO Add performance logs for windows vs linux
+
 // Define the expected response type from each experiment
 type Response struct {
 	Coefficients []float64 `json:"coefficients"`

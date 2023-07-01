@@ -16,7 +16,8 @@ func ExperimentGo(set string, nRuns int) Response {
 	//var times []float64
 
 	startTime := time.Now()
-	time.Sleep(startTime.Truncate(time.Second).Add(time.Second).Sub(startTime))
+	// Sleeps until new second begins to increase accuracy on Windows
+	time.Sleep(startTime.Truncate(time.Millisecond).Add(time.Millisecond).Sub(startTime))
 	startTime = time.Now()
 	for i := 0; i < nRuns; i++ {
 

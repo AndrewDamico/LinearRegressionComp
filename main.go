@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/montanaflynn/stats"
 	"strconv"
 )
 
@@ -17,6 +18,8 @@ var performanceGo []float64
 var performanceR []float64
 var nRuns int = 500 //!important for Windows
 var nExperiments = 15
+var roundCoefficients uint = 7
+var roundTime uint = 8
 
 // Run Experiment
 func experiment(set string) {
@@ -37,7 +40,7 @@ func experiment(set string) {
 
 	// Runs each experiment n times and saves experiment values
 	for i := 0; i < nExperiments; i++ {
-		fmt.Printf("Performing Experiment on set %s: %d \r", set, i+1)
+		fmt.Printf("  Performing Experiment on set %s: %d / %d \r", set, i+1, nExperiments)
 		responseGo = ExperimentGo(set, nRuns)
 		responsePython = ExperimentPython(set, nRunsString)
 		responseR = ExperimentR(set, nRunsString)
@@ -57,6 +60,9 @@ func experiment(set string) {
 
 	// Displays most recent experiment results
 	// #ToDo make averages of experiment results instead
+	responseGo.Time, _ = stats.Mean(performanceGoExperiment)
+	responseR.Time, _ = stats.Mean(performanceRExperiment)
+	responsePython.Time, _ = stats.Mean(performancePythonExperiment)
 	fmt.Println()
 	fmt.Printf("Results from Set %s: \r", set)
 	fmt.Println()

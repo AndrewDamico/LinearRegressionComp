@@ -35,19 +35,19 @@ func createTable(resultsGo, resultsPython, resultsR Response) {
 	// Create Table
 	data := [][]interface{}{
 		{"Go",
-			roundFloat(resultsGo.Coefficients[0], 10),
-			roundFloat(resultsGo.Coefficients[1], 10),
-			roundFloat(resultsGo.Time, 7),
+			roundFloat(resultsGo.Coefficients[0], roundCoefficients),
+			roundFloat(resultsGo.Coefficients[1], roundCoefficients),
+			roundFloat(resultsGo.Time, roundTime),
 		},
 		{"Python",
-			roundFloat(resultsPython.Coefficients[0], 10),
-			roundFloat(resultsPython.Coefficients[1], 10),
-			roundFloat(resultsPython.Time, 7),
+			roundFloat(resultsPython.Coefficients[0], roundCoefficients),
+			roundFloat(resultsPython.Coefficients[1], roundCoefficients),
+			roundFloat(resultsPython.Time, roundTime),
 		},
 		{"R",
-			roundFloat(resultsR.Coefficients[0], 10),
-			roundFloat(resultsR.Coefficients[1], 10),
-			roundFloat(resultsR.Time, 7),
+			roundFloat(resultsR.Coefficients[0], roundCoefficients),
+			roundFloat(resultsR.Coefficients[1], roundCoefficients),
+			roundFloat(resultsR.Time, roundTime),
 		},
 	}
 

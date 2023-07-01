@@ -131,6 +131,8 @@ func optionsMenu() {
 		fmt.Println("1. Set number of runs per test.")
 		fmt.Println("2. Set number of runs per experiment.")
 		fmt.Println("3. Set config to Debug mode.")
+		fmt.Println("4. Set rounding value of coefficients.")
+		fmt.Println("5. Set rounding value of runtime.")
 		fmt.Println("Press Enter to Return to Previous Menu")
 
 		var err error
@@ -175,6 +177,32 @@ func optionsMenu() {
 			clearScreen()
 			fmt.Println("Setting config to debug mode")
 			nExperiments = 1
+			menuReset()
+		case 4:
+			clearScreen()
+			fmt.Println("Rounding Value of Coefficients")
+			fmt.Println("Current rounding value:", roundCoefficients)
+			fmt.Println("Please enter new number and press enter.")
+			//#todo if user doesn't enter number use default
+			_, err := fmt.Scanf("%d\n", &roundCoefficients)
+			if err != nil {
+				fmt.Println("Invalid input. Please enter number try again.")
+				continue
+			}
+			fmt.Println("Current rounding of Coefficients:", roundCoefficients)
+			menuReset()
+		case 5:
+			clearScreen()
+			fmt.Println("Rounding Value of Runtime")
+			fmt.Println("Current rounding value:", roundTime)
+			fmt.Println("Please enter new number and press enter.")
+			//#todo if user doesn't enter number use default
+			_, err := fmt.Scanf("%d\n", &roundTime)
+			if err != nil {
+				fmt.Println("Invalid input. Please enter number try again.")
+				continue
+			}
+			fmt.Println("Current rounding value of Runtime:", roundTime)
 			menuReset()
 		default:
 			clearScreen()

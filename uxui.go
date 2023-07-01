@@ -3,14 +3,28 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"github.com/inancgumus/screen"
 	"os"
 )
 
+func clearScreen() {
+	screen.Clear()
+	screen.MoveTopLeft()
+}
+
 func mainMenu() {
+	clearScreen()
 	var choice int64 = -1
 	var set string
 
 	scanner := bufio.NewScanner(os.Stdin)
+
+	menuReset := func() {
+		fmt.Println()
+		fmt.Println("Press Enter to continue...")
+		scanner.Scan()
+		clearScreen()
+	}
 
 	for {
 		fmt.Println("Regression Performance - Main Menu")
@@ -28,7 +42,7 @@ func mainMenu() {
 
 		var err error
 
-		_, err = fmt.Scanf("%d", &choice)
+		_, err = fmt.Scanf("%d\n", &choice)
 		if err != nil {
 			choice = -1
 		}
@@ -40,9 +54,7 @@ func mainMenu() {
 		case 1:
 			set = "One"
 			experiment(set)
-			fmt.Println()
-			fmt.Println("Press Enter to continue...")
-			scanner.Scan()
+			menuReset()
 		case 2:
 			set = "Two"
 			experiment(set)
@@ -87,6 +99,7 @@ func mainMenu() {
 			fmt.Println()
 			fmt.Println("Press Enter to continue...")
 			scanner.Scan()
+			clearScreen()
 		case 9:
 			optionsMenu()
 		default:
@@ -100,6 +113,7 @@ func mainMenu() {
 }
 
 func optionsMenu() {
+	clearScreen()
 	fmt.Println("Configuration Menu")
 	fmt.Println()
 

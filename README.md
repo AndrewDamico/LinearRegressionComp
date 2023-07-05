@@ -7,8 +7,8 @@ Linear Regression Comparison between R, Python, and Go
 The Linear Regression Comp app is a Go application which compairs the results of a linear regression model built on the
 Anscombe Quartet in Python, R, and Go.
 
-![Image showing main menu](https://github.com/AndrewDamico/LinearRegressionComp/blob/main/image1.png?raw=true)
-![Image showing sample experiment](https://github.com/AndrewDamico/LinearRegressionComp/blob/main/image2.png?raw=true)
+![Image showing main menu](https://github.com/AndrewDamico/LinearRegressionComp/blob/main/Picture1.png?raw=true)
+![Image showing sample experiment](https://github.com/AndrewDamico/LinearRegressionComp/blob/main/Picture2.png?raw=true)
 
 ## Features
 1. Calculate the time and coefficients of each set of the Anscombe Quartet individually.

@@ -18,6 +18,8 @@ type Response struct {
 var performancePython []float64
 var performanceGo []float64
 var performanceR []float64
+
+// Set initial default parameters. See README.md for definitions.
 var nRuns int = 500 //!important for Windows
 var nExperiments = 15
 var roundCoefficients uint = 7
